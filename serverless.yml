@@ -1,0 +1,53 @@
+org: sarlos
+app: aws-python-http-api-project
+service: aws-serverless-react-template
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: ap-northeast-1
+
+package:
+  patterns:
+    - '!node_modules'
+    - '!package.json'
+    - '!package-lock.json'
+    - '!poetry.lock'
+    - '!pyproject.toml'
+    - '!pytest.ini'
+    - '!ui/**'
+    - '!test/**'
+
+functions:
+  api:
+    handler: api.main.handler
+    events:
+      - httpApi:
+          path: "*"
+          method: "*"
+    layers:
+      - { Ref: PythonRequirementsLambdaLayer }
+
+plugins:
+  - serverless-python-requirements
+  - serverless-domain-manager
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  basePath:
+    dev: ${env:BASE_PATH_DEV}
+    prd: ${env:BASE_PATH_PRD}
+  customDomain:
+    domainName: api.aws.sarlos.jp
+    stage: ${self:custom.stage}
+    basePath: ${self:custom.basePath.${self:custom.stage}}
+    certificateName: '*.aws.sarlos.jp'
+    createRoute53Record: true
+    endpointType: 'regional'
+    apiType: http
+    securityPolicy: tls_1_2
+  pythonRequirements:
+    dockerizePip: true
+    layer: true

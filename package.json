@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "serverless-domain-manager": "^6.2.4",
+    "serverless-python-requirements": "^6.0.0"
+  }
+}
