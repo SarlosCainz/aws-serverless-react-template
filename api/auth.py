@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+from io import BytesIO
 import urllib.parse
 from typing import List
 
@@ -9,6 +10,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt, jwk
 from jose.utils import base64url_decode
 import requests
+import boto3
+from botocore.exceptions import ClientError
 
 from api.config import settings
 import api.models as models
@@ -21,9 +24,20 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def get_kids():
-    with open(settings.auth_jwks_file, "r") as file:
-        jwks = json.load(file)
-        kid_to_jwk = {jwk["kid"]: jwk for jwk in jwks["keys"]}
+    logger.info("start")
+    kid_to_jwk = None
+
+    s3 = boto3.resource("s3")
+    s3_bucket = s3.Bucket(settings.s3_bucket_name)
+
+    with BytesIO() as file:
+        try:
+            s3_bucket.download_fileobj(settings.auth_jwks_file, file)
+            file.seek(0)
+            jwks = json.load(file)
+            kid_to_jwk = {jwk["kid"]: jwk for jwk in jwks["keys"]}
+        except ClientError as ex:
+            logger.error(ex)
 
     return kid_to_jwk
 
