@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List, Dict
 
 from pydantic import BaseModel, HttpUrl, constr, EmailStr, conlist
@@ -17,6 +18,12 @@ class User(BaseModel):
     full_name: Optional[constr(max_length=30)] = None
     picture: Optional[HttpUrl] = None
     groups: Optional[conlist(constr(to_lower=True), max_items=10)] = None
+
+
+class Doc(BaseModel):
+    filename: constr(min_length=1, max_length=30)
+    content: constr(min_length=1, max_length=2000)
+    last_update: Optional[datetime] = None
 
 
 class Token(BaseModel):

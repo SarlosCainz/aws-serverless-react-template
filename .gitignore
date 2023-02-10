@@ -16,8 +16,12 @@ var/
 .installed.cfg
 *.egg
 .env
+.env.*
+*.local
 .idea
 node_modules
 
 # Serverless directories
 .serverless
+serverless_sdk
+/misc/jwks.json

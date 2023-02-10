@@ -7,7 +7,27 @@ useDotenv: true
 provider:
   name: aws
   runtime: python3.9
-  region: ap-northeast-1
+  region: ${env:REGION}
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "s3:ListBucket"
+          Resource:
+            Fn::Join:
+              - ""
+              - - "arn:aws:s3:::"
+                - ${env:S3_BUCKET_NAME}
+        - Effect: "Allow"
+          Action:
+            - "s3:GetObject"
+          Resource:
+            Fn::Join:
+              - ""
+              - - "arn:aws:s3:::"
+                - ${env:S3_BUCKET_NAME}
+                - "/*"
 
 package:
   patterns:
@@ -20,6 +40,7 @@ package:
     - '!ui/**'
     - '!test/**'
 
+
 functions:
   api:
     handler: api.main.handler
@@ -29,6 +50,13 @@ functions:
           method: "*"
     layers:
       - { Ref: PythonRequirementsLambdaLayer }
+    environment:
+      AUTH_CLIENT_ID: ${env:AUTH_CLIENT_ID}
+      AUTH_CLIENT_SECRET: ${env:AUTH_CLIENT_SECRET}
+      AUTH_HOSTED_UI: ${env:AUTH_HOSTED_UI}
+      AUTH_REDIRECT_URI: ${env:AUTH_REDIRECT_URI}
+      S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
+      ALLOW_ORIGIN: ${env:ALLOW_ORIGIN}
 
 plugins:
   - serverless-python-requirements
